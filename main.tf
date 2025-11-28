@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -50,14 +54,19 @@ resource "random_id" "suffix" {
 
 resource "aws_s3_bucket" "eb_bucket" {
   bucket = "nginx-docker-terraform-bucket-${random_id.suffix.hex}"
+}
+
+resource "aws_s3_bucket_acl" "eb_bucket_acl" {
+  bucket = aws_s3_bucket.eb_bucket.id
   acl    = "private"
 }
 
 # Step 4: Upload your zip to S3
-resource "aws_s3_bucket_object" "app_version" {
+resource "aws_s3_object" "app_version" {
   bucket = aws_s3_bucket.eb_bucket.id
   key    = "nginx-app.zip"
-  source = "../nginx-app.zip"  # Path to your zip file
+  source = "../nginx-app.zip"
+  acl    = "private"
 }
 
 # Step 5: Create Elastic Beanstalk application version
@@ -65,7 +74,7 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
   name        = "v1"
   application = aws_elastic_beanstalk_application.nginx_app.name
   bucket      = aws_s3_bucket.eb_bucket.id
-  key         = aws_s3_bucket_object.app_version.key
+  source      = aws_s3_object.app_version.id
 
   depends_on = [null_resource.docker_build_push]
 }
