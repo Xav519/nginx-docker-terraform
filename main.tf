@@ -65,7 +65,7 @@ resource "aws_s3_bucket_acl" "eb_bucket_acl" {
 resource "aws_s3_object" "app_version" {
   bucket = aws_s3_bucket.eb_bucket.id
   key    = "nginx-app.zip"
-  source = "../nginx-app.zip"
+  source = "../nginx-app.zip"   # path to your zipped Dockerrun.aws.json
   acl    = "private"
 }
 
@@ -74,7 +74,7 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
   name        = "v1"
   application = aws_elastic_beanstalk_application.nginx_app.name
   bucket      = aws_s3_bucket.eb_bucket.id
-  source      = aws_s3_object.app_version.id
+  key         = aws_s3_object.app_version.key  # use key, not id
 
   depends_on = [null_resource.docker_build_push]
 }
