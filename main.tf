@@ -47,7 +47,7 @@ resource "aws_elastic_beanstalk_application" "nginx_app" {
 resource "aws_elastic_beanstalk_environment" "nginx_env" {
   name                = "nginx-env"
   application         = aws_elastic_beanstalk_application.nginx_app.name
-  solution_stack_name = "64bit Amazon Linux 2 v5.8.6 running Docker"
+  solution_stack_name = "64bit Amazon Linux 2 v4.4.0 running Docker"
 
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
