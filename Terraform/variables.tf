@@ -1,24 +1,19 @@
-variable "docker_username" {
-  type    = string
-  default = "xav519"
-}
-
 variable "docker_image" {
   type    = string
-  default = "nginx-docker-terraform"
+  default = "xav519/nginx-docker-terraform:latest"
 }
 
-variable "environment_name" {
-  type    = string
-  default = "nginx-env"
-}
-
-variable "application_name" {
+variable "eb_app_name" {
   type    = string
   default = "nginx-app"
 }
 
-variable "region" {
+variable "eb_env_name" {
+  type    = string
+  default = "nginx-env"
+}
+
+variable "aws_region" {
   type    = string
   default = "us-east-1"
 }
