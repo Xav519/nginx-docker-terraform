@@ -21,23 +21,24 @@ The architecture consists of:
 * **Terraform**: Configures and deploys all AWS resources automatically.
 * **Docker Hub**: Stores the Docker image for Nginx.
 
-## todo add diagram
+## todo: Architecture to add
 
 ---
 
 ## Table of Contents
 
-* Prerequisites
-* Installing Terraform
-* Project Setup
-* Terraform Configuration
-* Docker Image
-* Testing the Application
-* Terraform Workflow
-* Cleanup
-* References
-
----
+1. [Project Motivation](#project-motivation)
+2. [Architecture Overview](#architecture-overview)
+3. [Screenshots](#screenshots)
+4. [Prerequisites](#prerequisites)
+5. [Project Setup](#project-setup)
+6. [Terraform Configuration](#terraform-configuration)
+7. [Deploying the Application](#deploying-the-application)
+8. [How the Deployment Works](#how-the-deployment-works)
+9. [Testing the Deployment](#testing-the-deployment)
+10. [Terraform Workflow](#terraform-workflow)
+11. [Cleanup](#cleanup)
+12. [References](#references)
 
 ## Prerequisites
 
@@ -173,4 +174,3 @@ terraform destroy
 ---
 
 — Xavier Dupuis
-
