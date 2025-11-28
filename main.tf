@@ -43,22 +43,7 @@ resource "aws_elastic_beanstalk_application" "nginx_app" {
   depends_on  = [null_resource.docker_build_push]
 }
 
-# Step 3: Create Elastic Beanstalk Environment
-resource "aws_elastic_beanstalk_environment" "nginx_env" {
-  name                = "nginx-env"
-  application         = aws_elastic_beanstalk_application.nginx_app.name
-  solution_stack_name = "64bit Amazon Linux 2 v4.4.0 running Docker"
-
-  setting {
-    namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "ENV"
-    value     = "production"
-  }
-
-  depends_on = [aws_elastic_beanstalk_application.nginx_app]
-}
-
-# Create an S3 bucket for EB application versions
+# Step 3: Create an S3 bucket for EB application versions
 resource "random_id" "suffix" {
   byte_length = 4
 }
@@ -68,14 +53,14 @@ resource "aws_s3_bucket" "eb_bucket" {
   acl    = "private"
 }
 
-# Upload your zip to S3
+# Step 4: Upload your zip to S3
 resource "aws_s3_bucket_object" "app_version" {
   bucket = aws_s3_bucket.eb_bucket.id
   key    = "nginx-app.zip"
   source = "../nginx-app.zip"  # Path to your zip file
 }
 
-# Create Elastic Beanstalk application version
+# Step 5: Create Elastic Beanstalk application version
 resource "aws_elastic_beanstalk_application_version" "app_version" {
   name        = "v1"
   application = aws_elastic_beanstalk_application.nginx_app.name
@@ -85,7 +70,7 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
   depends_on = [null_resource.docker_build_push]
 }
 
-# Update EB environment to use the version
+# Step 6: Create Elastic Beanstalk Environment
 resource "aws_elastic_beanstalk_environment" "nginx_env" {
   name                = "nginx-env"
   application         = aws_elastic_beanstalk_application.nginx_app.name
