@@ -1,3 +1,5 @@
+// main.tf
+
 terraform {
   required_providers {
     aws = {
@@ -12,21 +14,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
-}
-
-variable "docker_username" {
-  type    = string
-  default = "xav519"
-}
-
-variable "docker_image" {
-  type    = string
-  default = "nginx-docker-terraform"
+  region = var.aws_region
 }
 
 ############################
-# Step 1: Build & Push Docker Image
+# Build & Push Docker Image (local)
 ############################
 resource "null_resource" "docker_build_push" {
   provisioner "local-exec" {
@@ -43,31 +35,27 @@ resource "null_resource" "docker_build_push" {
 }
 
 ############################
-# Step 2: Create Elastic Beanstalk Application
+# Elastic Beanstalk Application
 ############################
 resource "aws_elastic_beanstalk_application" "nginx_app" {
-  name        = "nginx-app"
+  name        = var.application_name
   description = "Nginx Docker App deployed via Terraform"
   depends_on  = [null_resource.docker_build_push]
 }
 
 ############################
-# Step 3: Create IAM Role & Instance Profile
+# IAM Role & Instance Profile (for EC2 instances)
 ############################
 resource "aws_iam_role" "eb_instance_role" {
-  name = "nginx-eb-instance-role"
+  name = "${var.application_name}-instance-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
   })
 }
 
@@ -77,33 +65,35 @@ resource "aws_iam_role_policy_attachment" "eb_instance_role_policy" {
 }
 
 resource "aws_iam_instance_profile" "eb_instance_profile" {
-  name = "nginx-eb-instance-profile"
+  name = var.instance_profile_name
   role = aws_iam_role.eb_instance_role.name
 }
 
 ############################
-# Step 4: Create S3 Bucket for EB App Versions
+# S3 bucket for EB app versions
 ############################
 resource "random_id" "suffix" {
   byte_length = 4
 }
 
 resource "aws_s3_bucket" "eb_bucket" {
-  bucket = "nginx-docker-terraform-bucket-${random_id.suffix.hex}"
+  bucket = "${var.s3_bucket_prefix}-${random_id.suffix.hex}"
+  # keep defaults; don't set ACL resource (Bucket owner enforced in many accounts)
 }
 
 ############################
-# Step 5: Upload Zip to S3
+# Upload zipped Dockerrun (nginx-app.zip) to S3
+# Make sure nginx-app.zip is in the same folder as this main.tf
 ############################
 resource "aws_s3_object" "app_version" {
   bucket = aws_s3_bucket.eb_bucket.id
   key    = "nginx-app.zip"
-  source = "nginx-app.zip"   # Path to your zipped Dockerrun.aws.json
+  source = "nginx-app.zip"
   acl    = "private"
 }
 
 ############################
-# Step 6: Create EB Application Version
+# EB Application Version (points to S3 object)
 ############################
 resource "aws_elastic_beanstalk_application_version" "app_version" {
   name        = "v1"
@@ -115,22 +105,21 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
 }
 
 ############################
-# Step 7: Create EB Environment
+# Elastic Beanstalk Environment
 ############################
 resource "aws_elastic_beanstalk_environment" "nginx_env" {
-  name                = "nginx-env"
+  name                = var.environment_name
   application         = aws_elastic_beanstalk_application.nginx_app.name
   solution_stack_name = "64bit Amazon Linux 2 v4.4.0 running Docker"
   version_label       = aws_elastic_beanstalk_application_version.app_version.name
 
-  # Attach instance profile to allow EC2 instances to run
+  # Attach IAM instance profile so EC2 instances can run properly
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
     value     = aws_iam_instance_profile.eb_instance_profile.name
   }
 
-  # Custom environment variables
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "ENV"
