@@ -14,6 +14,9 @@ This project demonstrates how to deploy a Dockerized Nginx web application on AW
 
 ### Architecture Overview
 
+![alt text](ArchitectureBeanstalkAWS.png)
+*This architecture diagram was created using **MermaidChart** (https://www.mermaidchart.com).* <br /><br />
+
 The architecture consists of:
 
 * **Elastic Beanstalk Environment**: Hosts the Docker container running Nginx.
@@ -21,7 +24,6 @@ The architecture consists of:
 * **Terraform**: Configures and deploys all AWS resources automatically.
 * **Docker Hub**: Stores the Docker image for Nginx.
 
-## todo: Architecture to add
 
 ---
 
