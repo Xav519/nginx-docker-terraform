@@ -43,3 +43,7 @@ terraform.rc
 # Uncomment the line below if you want to ignore planout files.
 # planout
 # https://github.com/github/gitignore/blob/main/Terraform.gitignore
+
+# Local Docker files
+*.zip
+*.tar
