@@ -56,16 +56,11 @@ resource "aws_s3_bucket" "eb_bucket" {
   bucket = "nginx-docker-terraform-bucket-${random_id.suffix.hex}"
 }
 
-resource "aws_s3_bucket_acl" "eb_bucket_acl" {
-  bucket = aws_s3_bucket.eb_bucket.id
-  acl    = "private"
-}
-
 # Step 4: Upload your zip to S3
 resource "aws_s3_object" "app_version" {
   bucket = aws_s3_bucket.eb_bucket.id
   key    = "nginx-app.zip"
-  source = "../nginx-app.zip"   # path to your zipped Dockerrun.aws.json
+  source = "nginx-app.zip"   # path to your zipped Dockerrun.aws.json
   acl    = "private"
 }
 
@@ -74,7 +69,7 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
   name        = "v1"
   application = aws_elastic_beanstalk_application.nginx_app.name
   bucket      = aws_s3_bucket.eb_bucket.id
-  key         = aws_s3_object.app_version.key  # use key, not id
+  key         = aws_s3_object.app_version.key
 
   depends_on = [null_resource.docker_build_push]
 }
@@ -93,4 +88,9 @@ resource "aws_elastic_beanstalk_environment" "nginx_env" {
   }
 
   depends_on = [aws_elastic_beanstalk_application_version.app_version]
+}
+
+# output EB URL after deployment
+output "elastic_beanstalk_url" {
+  value = aws_elastic_beanstalk_environment.nginx_env.endpoint_url
 }
