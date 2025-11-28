@@ -7,6 +7,7 @@ I built this project to address a common challenge in modern organizations: depl
 To solve this, I created an automated deployment using AWS Elastic Beanstalk, Docker, and Terraform. The project deploys a containerized Nginx application using Infrastructure as Code, ensuring that the entire environment is created, configured, and updated automatically.
 
 This project demonstrates how automation, containerization, and cloud services work together to improve scalability, reduce errors, and streamline operations. It also helped me strengthen practical skills in AWS, Docker, and Terraform skills that are directly applicable to real enterprise cloud environments.
+
 ---
 
 ## Project Overview
