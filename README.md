@@ -2,10 +2,11 @@
 
 ## Project Motivation
 
-I decided to build this project to get real, hands-on experience with AWS cloud services working together. In this project, I deployed a Dockerized Nginx application to AWS Elastic Beanstalk using Terraform.
+I built this project to address a common challenge in modern organizations: deploying applications reliably and consistently in the cloud. Many companies struggle with manual configurations, inconsistent environments, and deployments that are hard to reproduce.
 
-This helped me learn how different AWS services can communicate and work together automatically, while also practicing Terraform for setting up and managing cloud infrastructure. The goal was to better understand cloud deployment automation, containerized applications, and infrastructure as code in a practical, real-world scenario.
+To solve this, I created an automated deployment using AWS Elastic Beanstalk, Docker, and Terraform. The project deploys a containerized Nginx application using Infrastructure as Code, ensuring that the entire environment is created, configured, and updated automatically.
 
+This project demonstrates how automation, containerization, and cloud services work together to improve scalability, reduce errors, and streamline operations. It also helped me strengthen practical skills in AWS, Docker, and Terraform skills that are directly applicable to real enterprise cloud environments.
 ---
 
 ## Project Overview
@@ -93,19 +94,6 @@ Terraform provisions:
 * **Elastic Beanstalk Environment**: Public-facing load-balanced environment.
 * **Docker Build & Push**: Local-exec builds and pushes Docker image to Docker Hub.
 
-**Example main.tf snippet**:
-
-```hcl
-resource "null_resource" "docker_build_push" {
-  provisioner "local-exec" {
-    command = <<EOT
-      docker build -t ${var.docker_username}/${var.docker_image}:latest .
-      docker login -u ${var.docker_username}
-      docker push ${var.docker_username}/${var.docker_image}:latest
-    EOT
-  }
-}
-```
 
 ---
 
