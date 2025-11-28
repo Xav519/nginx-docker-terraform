@@ -17,14 +17,14 @@ This project demonstrates how to deploy a Dockerized Nginx web application on AW
 ### Architecture Overview
 
 ![alt text](Images/ArchitectureBeanstalkAWS.png)
-*This architecture diagram was created using **MermaidChart** ([https://www.mermaidchart.com](https://www.mermaidchart.com)).* <br /><br />
+*This architecture diagram was created using **MermaidChart** ([https://www.mermaidchart.com](https://www.mermaidchart.com)).*
 
 The architecture consists of:
 
 * **Elastic Beanstalk Environment**: Hosts the Docker container running Nginx.
-* **S3 Bucket**: Stores application versions (zip files containing the `Dockerrun.aws.json` configuration).
+* **S3 Bucket**: Stores application versions (zip files containing `Dockerrun.aws.json`).
 * **Terraform**: Configures and deploys all AWS resources automatically.
-* **Docker Hub**: Stores the Docker image for Nginx.
+* **Docker Hub**: Stores the Docker image for Nginx with the website.
 
 ---
 
@@ -36,13 +36,12 @@ The architecture consists of:
 4. [Prerequisites](#prerequisites)
 5. [Project Setup](#project-setup)
 6. [Terraform Configuration](#terraform-configuration)
-7. [Docker Image and EB Zip](#docker-image-and-eb-zip)
+7. [Docker Image](#docker-image)
 8. [Deploying the Application](#deploying-the-application)
-9. [Adding Your Own Website](#adding-your-own-website)
-10. [Testing the Deployment](#testing-the-deployment)
-11. [Terraform Workflow](#terraform-workflow)
-12. [Cleanup](#cleanup)
-13. [References](#references)
+9. [Testing the Deployment](#testing-the-deployment)
+10. [Terraform Workflow](#terraform-workflow)
+11. [Cleanup](#cleanup)
+12. [References](#references)
 
 ---
 
@@ -50,8 +49,8 @@ The architecture consists of:
 
 * AWS account with permissions for Elastic Beanstalk, S3, and IAM.
 * Terraform installed.
-* Docker installed and configured locally (optional if using public image only).
-* Docker Hub account (optional, only if creating a custom image).
+* Docker installed and configured locally.
+* Docker Hub account for storing images (optional for this project).
 * Git and GitHub for version control.
 
 ---
@@ -76,7 +75,7 @@ mkdir AWS_projects/nginx-docker-terraform
 cd AWS_projects/nginx-docker-terraform
 ```
 
-2. Create a Dockerfile for Nginx (if building your own image):
+2. Create a Dockerfile for Nginx (already includes your website):
 
 ```dockerfile
 FROM nginx:latest
@@ -84,8 +83,7 @@ COPY . /usr/share/nginx/html
 ```
 
 3. Create Terraform files: `main.tf`, `variables.tf`, and `outputs.tf`.
-
-4. Create a zip file for Elastic Beanstalk deployment containing **`Dockerrun.aws.json`**:
+4. Create a zip file containing `Dockerrun.aws.json` for Elastic Beanstalk:
 
 ```json
 {
@@ -102,10 +100,7 @@ COPY . /usr/share/nginx/html
 }
 ```
 
-* Name this zip `nginx-app.zip`.
-* Terraform will upload it to S3 and create an Elastic Beanstalk application version from it.
-
-**Note:** The current Docker image only contains default Nginx. The zip is still required to tell Elastic Beanstalk which Docker image to deploy.
+> **Note:** The zip file does **not** need to include your website content. Your Docker image already contains the HTML website. The zip is only needed so Elastic Beanstalk knows which Docker image to pull and how to configure the container.
 
 ---
 
@@ -113,31 +108,38 @@ COPY . /usr/share/nginx/html
 
 Terraform provisions:
 
-* **S3 Bucket**: For storing application versions (`nginx-app.zip`).
+* **S3 Bucket**: For storing the application zip.
 * **Elastic Beanstalk Application**: Nginx deployment container.
 * **Elastic Beanstalk Environment**: Public-facing load-balanced environment.
 * **Docker Pull from Docker Hub**: Elastic Beanstalk pulls the image automatically.
 
 ---
 
-## Docker Image and EB Zip
+## Docker Image
 
-For this project:
+For this project, I created a Docker image locally with the website and uploaded it to Docker Hub:
 
-1. I built a Docker image locally for Nginx:
+1. **Build Docker image locally**:
 
 ```bash
 docker build -t xav519/nginx-docker-terraform:latest .
+```
+
+2. **Log in to Docker Hub**:
+
+```bash
 docker login -u xav519
+```
+
+3. **Push image to public Docker Hub repository**:
+
+```bash
 docker push xav519/nginx-docker-terraform:latest
 ```
 
-2. Uploaded it to a **public Docker Hub repository**: `xav519/nginx-docker-terraform`.
+The image is publicly available at `xav519/nginx-docker-terraform`, allowing AWS Elastic Beanstalk to pull it directly.
 
-**Important:**
-
-* You **do not need to repeat these steps** when using this Terraform setup.
-* Terraform and Elastic Beanstalk will pull the public Docker image automatically.
+> **Important:** You do **not** need to build or push the Docker image yourself. Terraform and Elastic Beanstalk will pull the public Docker image automatically. The zip file is still required for EB deployment.
 
 ---
 
@@ -165,31 +167,13 @@ Confirm with `yes` when prompted.
 
 ---
 
-## Adding Your Own Website
-
-Currently, the Docker image only contains default Nginx. To serve your own website:
-
-1. **Option 1: Update Docker image**
-
-   * Add your website files (`index.html`, CSS, JS) to the Docker build context.
-   * Rebuild the image and push it to Docker Hub.
-   * Update `Dockerrun.aws.json` if using a new image tag.
-
-2. **Option 2: Use a different zip**
-
-   * Replace the default `nginx-app.zip` with a zip that contains your website files and `Dockerrun.aws.json` pointing to your Docker image.
-
-This ensures your custom website is deployed in Elastic Beanstalk.
-
----
-
 ## Testing the Deployment
 
-1. After Terraform finishes, access the public URL generated by Elastic Beanstalk, e.g.:
+1. After Terraform finishes, access the public URL generated by Elastic Beanstalk:
 
 ![alt text](Images/OutputsBeanstalkURL.png)
 
-2. You should see the Nginx welcome page (default) or your custom website if added:
+2. You should see your website:
 
 ![alt text](Images/WebsiteAccess.png)
 
@@ -199,11 +183,11 @@ This ensures your custom website is deployed in Elastic Beanstalk.
 
 1. Terraform provisions all AWS resources, including:
 
-   * S3 bucket for application versions
+   * S3 bucket for zip file
    * Elastic Beanstalk application and environment
    * Pulling Docker image from Docker Hub
 
-2. The deployment is fully automated with Infrastructure as Code.
+2. Deployment is fully automated and reproducible using Infrastructure as Code.
 
 ---
 
