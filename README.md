@@ -208,6 +208,7 @@ terraform destroy
 * Amazon Web Services. AWS S3 Documentation. Retrieved from [https://docs.aws.amazon.com/s3/index.html](https://docs.aws.amazon.com/s3/index.html)
 * Docker. Docker Documentation. Retrieved from [https://docs.docker.com/](https://docs.docker.com/)
 * OpenAI. ChatGPT (GPT-4/5 Model). Retrieved from [https://chat.openai.com](https://chat.openai.com)
+* Terraform registry** AWS Provider. Retrieved from [https://registry.terraform.io/providers/hashicorp/aws/latest/docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
 ---
 
